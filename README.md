@@ -41,55 +41,73 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 **Theory**
 
-[Problem Solving Approach to Data Science problems](lessons/Problem_solving_approach.ipynb)
+	[Problem Solving Approach to Data Science problems](lessons/Problem_solving_approach.ipynb)
 
-[Data Requirements and Collection](lessons/Data_collection.ipynb)
+	[Data Requirements and Collection](lessons/Data_collection.ipynb)
 
-[Data cleaning](lessons/Data_Cleaning.ipynb)
+	[Data cleaning](lessons/Data_Cleaning.ipynb)
 
-[Data Modeling and Evaluation](lessons/Modeling.ipynb)
+	[Data Modeling and Evaluation](lessons/Modeling.ipynb)
 
-[Python Basics](lessons/Python101.ipynb)
 
-[String operations](lessons/python/1.2_String_Operations.ipynb)
+**[Unix basics](lessons/UNIX.html)**
 
-[Tuples](lessons/python/2.1_Tuples.ipynb)
+**Python Notes**
 
-[Lists](lessons/python/2.2_Lists.ipynb)
+	[Python Basics](lessons/Python101.ipynb)
 
-[Dictionaries](lessons/python/2.3_Dictionaries.ipynb)
+	[String operations](lessons/python/1.2_String_Operations.ipynb)
 
-[Sets](lessons/python/2.4_Sets.ipynb)
+	[Tuples](lessons/python/2.1_Tuples.ipynb)
 
-[Conditionals](lessons/python/3.1_Conditions.ipynb)
+	[Lists](lessons/python/2.2_Lists.ipynb)
 
-[Loops](lessons/python/3.2_loops.ipynb)
+	[Dictionaries](lessons/python/2.3_Dictionaries.ipynb)
 
-[Functions](lessons/python/3.3_Functions.ipynb)
+	[Sets](lessons/python/2.4_Sets.ipynb)
 
-[Objects and Classes](lessons/python/3.4_Objects_and_Classes.ipynb)
+	[Conditionals](lessons/python/3.1_Conditions.ipynb)
 
-[Reading Files](lessons/python/4.1_Reading_Files.ipynb)
+	[Loops](lessons/python/3.2_loops.ipynb)
 
-[Writing Files](lessons/python/4.2Writing_and_Saving_Files.ipynb)
+	[Functions](lessons/python/3.3_Functions.ipynb)
 
-[Loading and Viewing Data using Pandas](lessons/python/4.3_Loading_Data_and_Viewing_Data.ipynb)
+	[Objects and Classes](lessons/python/3.4_Objects_and_Classes.ipynb)
 
-[NumPy 1D arrays](lessons/python/4.4_Numpy1d.ipynb)
+	[Reading Files](lessons/python/4.1_Reading_Files.ipynb)
 
-[NumPy 2D arrays](lessons/python/4.4_Numpy2d.ipynb)
+	[Writing Files](lessons/python/4.2Writing_and_Saving_Files.ipynb)
 
-[Data Analysis intro using Pandas](lessons/python/001.Data_Analytis_Intro.ipynb)
+	[Loading and Viewing Data using Pandas](lessons/python/4.3_Loading_Data_and_Viewing_Data.ipynb)
 
-[Intro to Matplotlib](lessons/python/1-1-1.Introduction-to-Matplotlib.ipynb)
+**SQL**
 
-[Area Plots, Histograms and Bar charts](lessons/python/2-2-1-Area-Plots-Histograms-and-Bar-Charts.ipynb)
+	[Connecting to IBM DB2 in Jupyter](lessons/sql/1-1-Connecting-2-IBMDB2.ipynb)
 
-[Pie Charts, Scatter plots and Bubble Plots](lessons/python/2-3-1-Pie-Charts-Box-Plots-Scatter-Plots-and-Bubble-Plots.ipynb)
+	[Querying Database](lessons/sql/1-2-Querying.ipynb)
 
-[Waffle Charts, Word clouds and Regression Plots](lessons/python/3-4-1-Waffle-Charts-Word-Clouds-and-Regression-Plots.ipynb)
+	[SQL Magic functions for SQL](lessons/sql/1-3-SQLmagic.ipynb)
 
-[Unix basics](lessons/UNIX.html)
+	[Analyzunbg Data](lessons/sql/1-5-Analyzing-Data.ipynb)
+
+	[Assignment](lessons/sql/1-6-Peer-Assignment.ipynb)
+
+**Data Science Libraries**
+
+	[NumPy 1D arrays](lessons/python/4.4_Numpy1d.ipynb)
+
+	[NumPy 2D arrays](lessons/python/4.4_Numpy2d.ipynb)
+
+	[Data Analysis intro using Pandas](lessons/python/001.Data_Analytis_Intro.ipynb)
+
+	[Intro to Matplotlib](lessons/python/1-1-1.Introduction-to-Matplotlib.ipynb)
+
+	[Area Plots, Histograms and Bar charts](lessons/python/2-2-1-Area-Plots-Histograms-and-Bar-Charts.ipynb)
+
+	[Pie Charts, Scatter plots and Bubble Plots](lessons/python/2-3-1-Pie-Charts-Box-Plots-Scatter-Plots-and-Bubble-Plots.ipynb)
+
+	[Waffle Charts, Word clouds and Regression Plots](lessons/python/3-4-1-Waffle-Charts-Word-Clouds-and-Regression-Plots.ipynb)
+
 
 [Generating Maps](lessons/python/3-5-1-Generating-Maps.ipynb)
 
