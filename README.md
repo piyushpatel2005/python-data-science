@@ -119,6 +119,10 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 	[NumPy Arrays](lessons/03_Numpy_Notebook.ipynb)
 
+	[NumPy notebook](lessons/libs/03_Numpy_Notebook.ipynb)
+
+	[Satellite Image Analysis](lessons/libs/Satellite_Image_Analysis_numpy.ipynb)
+
 2. [Pandas Library](lessons/pandas.md)
 
 	[Practical Pands](lessons/pandas.ipynb)
