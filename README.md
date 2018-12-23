@@ -52,6 +52,8 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 **[Unix basics](lessons/UNIX.html)**
 
+**Python Basics**
+
 [Python Basics](lessons/Python101.ipynb)
 
 [String operations](lessons/python/1.2_String_Operations.ipynb)
@@ -126,5 +128,7 @@ If you need a Python refresher, check out my other [Python repository](https://g
 	[Practical Pands](lessons/pandas.ipynb)
 
 	[Pandas Practicals 2](lessons/pandas2.ipynb)
+
+	[Pandas Intro](lessons/IntroPandas.ipynb)
 
 3. [Splunk](lessons/splunk.md)
