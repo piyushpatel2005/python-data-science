@@ -41,13 +41,13 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 **Theory**
 
-	[Problem Solving Approach to Data Science problems](lessons/Problem_solving_approach.ipynb)
+[Problem Solving Approach to Data Science problems](lessons/Problem_solving_approach.ipynb)
 
-	[Data Requirements and Collection](lessons/Data_collection.ipynb)
+[Data Requirements and Collection](lessons/Data_collection.ipynb)
 
-	[Data cleaning](lessons/Data_Cleaning.ipynb)
+[Data cleaning](lessons/Data_Cleaning.ipynb)
 
-	[Data Modeling and Evaluation](lessons/Modeling.ipynb)
+[Data Modeling and Evaluation](lessons/Modeling.ipynb)
 
 
 **[Unix basics](lessons/UNIX.html)**
