@@ -132,3 +132,11 @@ If you need a Python refresher, check out my other [Python repository](https://g
 	[Pandas Intro](lessons/IntroPandas.ipynb)
 
 3. [Splunk](lessons/splunk.md)
+
+
+
+## Harvard Data Science Notebooks
+
+[Basics of Python](harvard-data-science/Lab1-babypython.ipynb)
+
+[Pandas and Matplotlib plotting basics](harvard-data-science/Lab1-pythonpandas.ipynb)
