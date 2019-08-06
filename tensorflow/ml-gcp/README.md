@@ -204,3 +204,132 @@ with tf.Session() a sess:
 This can be run using `python xyz.py --debug`.
 
 Check [debugger notebook](debug_demo.ipynb)
+
+## Estimator API
+
+Estimator API provides high level API for creating machine learning applications. They are interchangeable and allows for quick modelling. It also provides checkpointing. It allows for out-of-memory datasets. It will train, evaluate and monitor. It will allows for distributed training. Everything is managed by estimator API. The base class `tf.estimator.Estimator` can wrap our code. Tensorflow has ready estimators like LinearRegressor, DNNRegressor, LinearClassifier, DNNClassifier, etc. which we can try out.
+
+To predict the property value based on features (sq_footage, type), we can do something like this. Categorical values will be one-hot encoded.
+
+There are many different feature columns to choose from like bucketized_column, embedding_column, crossed_column, categorical_column_with_hash_bucket, etc. To train the model, we write input function that will return features as named in the `featcols`.
+
+```python
+import tensorflow as tf
+featcols=[
+  tf.feature_column_numeric_column("sq_footage"),
+  tf.feature_column.categorial_column_with_vocabulary_list("type", ["house", "apt"])
+]
+model = tf.estimator.LinearRegressor(featcols) # instantiate LinearRegressor
+
+def train_input_fn():
+  features = {"sq_footage": [1000, 2000, 3000, 4000, 1000, 2000],
+              "type":       ["house", "house", "apt", "house", "apt", "house"]}
+  labels = [500, 1000, 1500, 2000, 300, 900]
+  return features, labels
+
+# call train function
+model.train(train_input_fn, steps=100) # repeat 100 times
+
+# use the model for prediction
+def predict_input_fn():
+  features = {"sq_footage": [1500, 1800],
+              "type":       ["house", "apt"]}
+  return features
+predictions = model.predict(predict_input_fn)
+```
+
+To use different pre-made estimator, just change the class name and supply appropriate parameters. 
+
+When we train large models, checkpointing is important as it will allow us to start training from where we left off.
+
+```python
+model = tf.estimator.LinearRegressor(featcols, './model_trained') # specify checkpointing directory while instantiating estimator class
+# To restore from the checkpointing directory, we instantiate using that directory
+trained_model = tf.estimator.LinearRegressor(featcols, './model_trained')
+trained_model.train(train_input_fn, steps=100) # continue training from last checkpoint if you think few more steps are required
+predictions = trained_model.predict(pred_input_fn) # predict from checkpointed training
+# To restart from scratch, delete this folder
+```
+
+For feeding numpy array or pandas dataframe, estimator has easy api
+
+```python
+def numpy_train_input_fn(sqft, prop_type, price):
+  return tf.estimator.inputs.numpy_input_fn(
+    x = {"sq_footage": sqft, "type": prop_type}, # feature dictionary using x
+    y = price, # labels using y named parameter
+    batch_size = 128, # how many datasets to use 
+    num_epochs = 10, # how many times to repeat the dataset
+    shuffle = True, # shuffling training data is important
+    queue_capacity = 1000 # size of the shuffle queue
+  )
+def pandas_train_input_fn(df):
+  return tf.estimator.inputs.pandas_input_fn(
+    x = df, # sq_footage and type selected automatically because of feature columns definition
+    y = df['price']
+    batch_size = 128,
+    num_epochs = 10,
+    shuffle = True,
+    queue_capacity = 1000
+  )
+
+model.train(pandas_train_input_fn(df), steps=1000) # override the steps in the defined function
+# one step corresponds to one batch of data
+model.train(pandas_train_input_fn(df), max_steps=1000) # might be nothing if checkpoint already there
+```
+
+[Example of running training using estimator API](b_estimator.ipynb)
+
+For real world model, we can supply data using datasets. Large datasets might be sharded into different files.
+
+```python
+# load data from CSV files
+def decode_line(row):
+  cols = tf.decode_csv(row, record_defaults=[[0], ['house'], [0]])
+  features = {'sq_footage': cols[0], 'type': cols[1]}
+  label = cols[2] # price
+  return features, label
+
+dataset = tf.data.TextLineDataset("train_1.csv").map(decode_line)
+
+dataset = dataset.shuffle(1000)
+                  .repeat(15)  # no. of epoch
+                  .batch(128)
+
+def input_fn():
+  features, label = dataset.make_one_shot_iterator().get_next()
+  return features, label # input function actually returns Tensorflow node and not the actual data.
+model.train(input_fn)
+```
+
+If we want to load large dataset with multiple sharded files, we have to change the following
+
+```python
+dataset = tf.data.Dataset.list_files("train.csv")
+            .flat_map(tf.data.TextLineDataset)
+            .map(decode_line)
+```
+
+[Handling large data](c_dataset.ipynb)
+
+The function `tf.estimator.train_and_evaluate()` implements distributed training. For using this api, we choose estimator, provide run config and provide train and evaluation specs. EvalSpec is where we provide our test dataset.
+
+To visualize the training use `tensorboard --logdir output_dir` when the model is created using `tf.estimator.RunConfig(model_dir="output_dir")`.
+
+Once we deploy our model in production, it can handle json input and produces json output. Gcloud command `gcloud ml-engine predict --model <model_name> --json-instances data.json` allows to receive output from our model. `gcloud ml-engine local predict --model-dir output/export/pricing/12325353 --json-instances data.json` lets us get output from exported model from local disk. When working with images, we send images as compressed but the model expects images to be uncompressed. Here is the function that handles that.
+
+```python
+def serving_input_fn():
+  json = { 'jpeg_bytes': tf.placeholder(tf.string, [None])}
+
+  def decode(jpeg):
+    pixels = tf.image.decode_jpeg(jpeg, channels=3)
+    return pixels
+  pics = tf.map_fn(decode, json['jpeg_bytes'], dtype=tf.uint8)
+  features = {'pics': pics}
+  return tf.estimator.export.ServingInputReceiver(features, json)
+  ```
+
+  [Distributed training and using Tensorboard](d_traineval.ipynb)
+
+  Google cloud AI platform allows to scale machine learning beyond single machine's capabilities. Large datasets can be handled on cloud. We can have micro service to serve our model with scalable cloud platform.
