@@ -333,3 +333,16 @@ def serving_input_fn():
   [Distributed training and using Tensorboard](d_traineval.ipynb)
 
   Google cloud AI platform allows to scale machine learning beyond single machine's capabilities. Large datasets can be handled on cloud. We can have micro service to serve our model with scalable cloud platform.
+
+  When running machine learning job on Google cloud, we separate our job into `task.py` to parse command-line parameters and send to `train_and_evaluate`. This file will invoke `model.py`. For ML training, single region bucket gives much better performance.
+
+  Once submitted the job, we can get details on the job using `gcloud ml-engine jobs describe job_name`. To get the latest logs `gcloud ml-engine jobs stream-jobs job_name`.
+
+  Filter jobs based on creation time or name
+
+  ```shell
+  gcloud ml-engine jobs list --filter='createTime>2017-01-15T19:00'
+  gcloud ml-engine jobs list --filter='jobId:census*' --limit=3
+  ```
+
+  [Running Tensorflow on cloud](e_ai_platform.ipynb)
