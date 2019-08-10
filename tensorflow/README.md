@@ -32,3 +32,9 @@ In Tensorflow, the evalutions are lazy, so if we don't run the execution in the 
 ## Digit recognition system
 
 With this simple example, we will not use the spatial information in the pixel layout in the image, but in reality, they are very important.
+
+[Digit recognition simple example](examples/softmax_regression.py)
+
+A large class of machine learning tasks is that we would like to learn a function from data examples to their known labels. This is called *supervised learning*. The measure of similarlity between true and predicted values in classification is called *cross entropy*. We try to minimize the loss function.
+
+21

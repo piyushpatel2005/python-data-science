@@ -140,3 +140,6 @@ If you need a Python refresher, check out my other [Python repository](https://g
 [Basics of Python](harvard-data-science/Lab1-babypython.ipynb)
 
 [Pandas and Matplotlib plotting basics](harvard-data-science/Lab1-pythonpandas.ipynb)
+
+[Web scrapping](harvard-data-science/02-DataScrapping.ipynb)
+	This lab uses Pandas to read CSV from movielens datasets.
