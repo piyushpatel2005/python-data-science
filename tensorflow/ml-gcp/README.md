@@ -360,3 +360,292 @@ features['scaled_price'] = (features['price'] - min_price) / (max_price - min_pr
 ```
 
 To use one-hot encoding, we must have specific set of values for categorical values.
+
+**Apache Beam** is data processing system. It creates a data processing pipeline. The pipeline must have a source, series of steps (transform) which works on `PCollection` which is the data processing unit. The output goes to a sink. To run a pipeline, we need runner. Runners are platform specific. In Python, `|` operator is overloaded to mean `apply` method which specifies operation on the data. To run the pipeline, we need to call `run()` method. 
+
+If you want to parallelize transformation and scale it across many nodes in the cluster, we should use Apache Beam's `ParDo` class. It acts on one item at a time (like Map in MapReduce). There are few methods in Beam that makes use of this class. For example `Map`, `FlatMap`, etc.
+
+```python
+# Simple apache beam pipeline to check the import statement in java files
+import apache_beam as beam
+import sys
+
+def my_grep(line, term):
+   if line.startswith(term):
+      yield line
+
+if __name__ == '__main__':
+   p = beam.Pipeline(argv=sys.argv)
+   input = '../javahelp/src/main/java/com/google/cloud/training/dataanalyst/javahelp/*.java'
+   output_prefix = '/tmp/output'
+   searchTerm = 'import'
+
+   # find all lines that contain the searchTerm
+   (p
+      | 'GetJava' >> beam.io.ReadFromText(input)
+      | 'Grep' >> beam.FlatMap(lambda line: my_grep(line, searchTerm) )
+      | 'write' >> beam.io.WriteToText(output_prefix)
+   )
+
+   p.run().wait_until_finish()
+   # To execute, `python grep.py`
+```
+
+```shell
+gsutil cp ../javahelp/src/main/java/com/google/cloud/training/dataanalyst/javahelp/*.java gs://<YOUR-BUCKET-NAME>/javahelp
+```
+
+```python
+# Run on Cloud DataFlow
+
+import apache_beam as beam
+
+def my_grep(line, term):
+   if line.startswith(term):
+      yield line
+
+PROJECT='cloud-training-demos'
+BUCKET='cloud-training-demos'
+
+def run():
+   argv = [
+      '--project={0}'.format(PROJECT),
+      '--job_name=examplejob2',
+      '--save_main_session',
+      '--staging_location=gs://{0}/staging/'.format(BUCKET),
+      '--temp_location=gs://{0}/staging/'.format(BUCKET),
+      '--runner=DataflowRunner'
+   ]
+
+   p = beam.Pipeline(argv=argv)
+   input = 'gs://{0}/javahelp/*.java'.format(BUCKET)
+   output_prefix = 'gs://{0}/javahelp/output'.format(BUCKET)
+   searchTerm = 'import'
+
+   # find all lines that contain the searchTerm
+   (p
+      | 'GetJava' >> beam.io.ReadFromText(input)
+      | 'Grep' >> beam.FlatMap(lambda line: my_grep(line, searchTerm) )
+      | 'write' >> beam.io.WriteToText(output_prefix)
+   )
+
+   p.run()
+
+if __name__ == '__main__':
+   run()
+# Execute using `python grepc.py`
+```
+
+This executes Cloud Dataflow job, which you can also monitor in the Dataflow services.
+
+```shell
+gsutil cat gs://<YOUR-BUCKET-NAME>/javahelp/output-*
+```
+
+MapReduce job using Apache Beam
+
+```python
+import apache_beam as beam
+import argparse
+
+def startsWith(line, term):
+   if line.startswith(term):
+      yield line
+
+def splitPackageName(packageName):
+   """e.g. given com.example.appname.library.widgetname
+           returns com
+	           com.example
+                   com.example.appname
+      etc.
+   """
+   result = []
+   end = packageName.find('.')
+   while end > 0:
+      result.append(packageName[0:end])
+      end = packageName.find('.', end+1)
+   result.append(packageName)
+   return result
+
+def getPackages(line, keyword):
+   start = line.find(keyword) + len(keyword)
+   end = line.find(';', start)
+   if start < end:
+      packageName = line[start:end].strip()
+      return splitPackageName(packageName)
+   return []
+
+def packageUse(line, keyword):
+   packages = getPackages(line, keyword)
+   for p in packages:
+      yield (p, 1)
+
+def by_value(kv1, kv2):
+   key1, value1 = kv1
+   key2, value2 = kv2
+   return value1 < value2
+
+if __name__ == '__main__':
+   parser = argparse.ArgumentParser(description='Find the most used Java packages')
+   parser.add_argument('--output_prefix', default='/tmp/output', help='Output prefix')
+   parser.add_argument('--input', default='../javahelp/src/main/java/com/google/cloud/training/dataanalyst/javahelp/', help='Input directory')
+
+   options, pipeline_args = parser.parse_known_args()
+   p = beam.Pipeline(argv=pipeline_args)
+
+   input = '{0}*.java'.format(options.input)
+   output_prefix = options.output_prefix
+   keyword = 'import'
+
+   # find most used packages
+   (p
+      | 'GetJava' >> beam.io.ReadFromText(input)
+      | 'GetImports' >> beam.FlatMap(lambda line: startsWith(line, keyword))
+      | 'PackageUse' >> beam.FlatMap(lambda line: packageUse(line, keyword))
+      | 'TotalUse' >> beam.CombinePerKey(sum)
+      | 'Top_5' >> beam.transforms.combiners.Top.Of(5, by_value)
+      | 'write' >> beam.io.WriteToText(output_prefix)
+   )
+
+   p.run().wait_until_finish()
+```
+
+```shell
+python ./is_popular.py --output_prefix=/tmp/myoutput
+ls -lrt /tmp/myoutput*
+```
+
+Cloud **DataPrep** allows to visualize and preprocess our data for feature engineering. It is fully managed service that allows for data processing using visual graphical UI. We can also create data visualizations to get statistical summaries. Dataprep has wranglers which can be used in Dataflow to convert them to pipeline.
+
+
+### Feature Cross
+
+Some problem even though they don't appear as linear model, we can have feature cross which makes the model linear with new feature. It lets you combine features.
+
+For any model, we can discretize the data which will create various number of squares. Memorization works when you have lots of data.
+
+To create a feature-cross use the method `crossed_column`.
+
+```python
+day_hr = tf.feature_column.crossed_column(
+  [dayofweek, hourofday],
+  24 * 7 # total number of hash buckets
+) # These columns have to be categorical otherwise, bucketize the column and then use crossed_column
+```
+
+The number of hash buckets manages sparsity and collision. Using a large value of hash buckets result in spark representation of feature cross. To use the embedding, we can use one of the method from tensorflow. Instead of one-hot encoding, we pass it through dense layer. This dense layer creates **embeddings**. To create embeddings, use `embedding_column`.
+
+```python
+day_hr_em = tf.feature_column.embedding_column(
+  day_hr,
+  2,
+  ckpt_to_load_from='london/ckpt-1000*',
+  tensor_name_in_ckpt='dayhr_embed',
+  trainable=False
+)
+```
+
+There are three possible places where we can do feature engineering.
+
+```python
+# inside train_input_fn function
+featcols = [
+  fc.numeric_column('sq_footage'),
+  fc.categorical_column_with_vocabulary_list(
+    "type", ["house", "apt"]
+  )
+]
+featcols[0] = (
+  fc.bucketized_column(features[0],
+          [500, 1000, 2500])
+)
+model = tf.estimator.LinearRegressor(featcols)
+
+# creating new fature columns with embeddings
+latbuckets = np.linspace(38.0, 42.0, nbuckets).tolist()
+
+b_lat = fc.bucketized_column(house_lat, latbuckets)
+
+loc = fc.crossed_column([b_lat, b_lon], nbuckets * nbuckets)
+
+eloc = fc.embedding_column(loc, nbuckets//4)
+```
+
+Features can be created in Tensorflow.
+
+```python
+def add_engineered(features):
+  lat1 = features['lat']
+  .. ... ...
+  dist = tf.sqrt(latdiff*latdiff + longdiff * longdiff)
+  features['euclidean'] = dist
+  return features
+```
+
+Call the `add_engineered` method from all input function.
+
+```python
+def train_input_fn():
+  ... ...
+  return add_engineered(features), label
+
+def serving_input_fn():
+  .. ....
+  return ServingInputReceiver(
+    add_engineered(features), json_features_ph)
+```
+
+The other option is to create feature engineering in Cloud Dataflow. The third option is to use `tf.transform`.
+
+[Feature Engineering on Dataflow](feateng.ipynb)
+
+With **Tensorflow transform**, we are limited to tensorflow transform but also get efficiency of Tensorflow. It is hybrid of Apache Beam and Tensorflow. For on the fly preprocessing, use Tensorflow. In this case, analysis is carried out in Apache Beam and transformations are done in Tensorflow. `tf.transform` provides two `PTransform`s. `AnalyzeAndTransformDataset` is executed in Beam to create the training dataset. `TransformDataset` is executed in Beam to create the evaluation dataset. The transformation code is executed in Tensorflow at prediction time. There are two phases: Analysis phase executed in Beam, Transform phase executed in Tensorflow during prediction.
+
+First, we inform Beam, which kind of data is expected using schema of training dataset.
+
+```python
+raw_data_schema = {
+  colname: dataset_schema.ColumnSchema(tf.String, ...)
+  for colname in 'dayOfweek,key',split(",")
+}
+
+raw_data_schema.update({
+  colname: dataset_schema.ColumnSchema(tf.float32, ...)
+  for colname in 'fare_amount,pickuplon,...,dropofflat'.split(',')
+})
+# Use schema to create metadata template
+raw_data_metadata = dataset_metadata.DatasetMetadata(dataset_schema.Schema(raw_data_schema))
+
+# Run analyze-and-transform PTransform on training dataset to get back preprocessed training data and transform function
+raw_data = (p
+  # read data from BigQuery
+  | beam.io.Read(beam.io.BigQuerySource(query=myquery, use_standard_sql=True))
+  # Filter the data that is valid
+  | beam.Filter(is_valid))
+  # Transformations are saved in transform_fn
+transformed_dataset, transform_fn = ((raw_data, raw_data_metadata)
+# pass raw data and metadata template to AnalyzeAndTransformDataset
+| beam_impl.AnalyzeAndTransformDataset(preprocess))
+
+# Write out the preprocessed training data into TFRecords, the most efficient format for Tensorflow
+transformed_data |
+  tfrecordio.WriteToTFRecord(
+    os.path.join(OUTPUT_DIR, 'train'),
+    coder=ExampleProtoCoder(transformed_metadata.schema)
+  )
+
+# Preproecssing function is restricted to Tensorflow functions
+# The things in preprocess() will get added to the Tensorflow graph and be executed in Tensorflow during serving.
+# Input to preprocess is a dictionary of tensors
+def preprocess(inputs):
+  results = {} # Create features from the input tensors and put into "results" dict.
+  result['fare_amount'] = inputs['fare_amount']
+  result['dayofweek'] = tft.string_to_int(inputs['dayofweek']) # convert Sunday to number 1
+  ... ...
+  result['dropofflat'] = (tft.scale_to_0_1(inputs['dropofflat']))
+  return result
+```
+
+While writing out the evaluation dataset, we reuse the transform function computed from the training. The reason `preprocess` needs only Tensorflow methods and not any Python method is because they are part of prediction graph. This way user can give raw data and model can do necessary transformations.
+
+[TF Transform example](tftransform.ipynb)
