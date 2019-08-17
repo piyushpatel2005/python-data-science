@@ -30,7 +30,7 @@ cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
 # This is called loss function. We try to minize this using gradient descent optimization.
 # 0.5 is the learning rate
 gd_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
+# the procedure to evaluate the accuracy of the model
 correct_mask = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y_true, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_mask, tf.float32))
 
@@ -48,5 +48,5 @@ with tf.Session() as sess:
     # Test
     # calculate accuracy using test datasets
     ans = sess.run(accuracy, feed_dict={x: data.test.images, y_true: data.test.labels})
-
+# print the results in percentage values
 print "Accuracy: {:.4}%".format(ans*100)

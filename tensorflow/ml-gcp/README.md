@@ -649,3 +649,7 @@ def preprocess(inputs):
 While writing out the evaluation dataset, we reuse the transform function computed from the training. The reason `preprocess` needs only Tensorflow methods and not any Python method is because they are part of prediction graph. This way user can give raw data and model can do necessary transformations.
 
 [TF Transform example](tftransform.ipynb)
+
+## Regularization
+
+When the loss on test data is increasing compared to training data. That graph is a sign of overfitting with large number of iterations.
