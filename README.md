@@ -143,3 +143,5 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 [Web scrapping](harvard-data-science/02-DataScrapping.ipynb)
 	This lab uses Pandas to read CSV from movielens datasets.
+
+[Scraping web using BeautifulSoup](Lab2-Web-scraping.ipynb)
