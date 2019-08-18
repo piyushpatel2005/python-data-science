@@ -145,3 +145,5 @@ If you need a Python refresher, check out my other [Python repository](https://g
 	This lab uses Pandas to read CSV from movielens datasets.
 
 [Scraping web using BeautifulSoup](Lab2-Web-scraping.ipynb)
+
+[Accessing SQL with Pandas](PandasAndSQL.ipynb)
