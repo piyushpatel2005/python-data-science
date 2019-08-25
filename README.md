@@ -134,7 +134,6 @@ If you need a Python refresher, check out my other [Python repository](https://g
 3. [Splunk](lessons/splunk.md)
 
 
-
 ## Harvard Data Science Notebooks
 
 [Basics of Python](harvard-data-science/Lab1-babypython.ipynb)
@@ -147,3 +146,9 @@ If you need a Python refresher, check out my other [Python repository](https://g
 [Scraping web using BeautifulSoup](Lab2-Web-scraping.ipynb)
 
 [Accessing SQL with Pandas](PandasAndSQL.ipynb)
+
+[Probablity](Lab3-probability.ipynb)
+
+[Statistics](Lab3-Stats.ipynb)
+
+[Frequency distributions](Lab3-Freq.ipynb)
