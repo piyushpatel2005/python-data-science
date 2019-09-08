@@ -164,5 +164,198 @@ sess.close()
 |:------------------|:--------------|
 | tf.constant(value) | Creates a tensor populated with the value specified in argument. |
 | tf.fill(shape, value) | Creates a tensor with shape and fills in with values. |
+| tf.zeros(shape) | returns a tensor of given `shape` with all elements 0. |
+| tf.zeros_like(tensor) | returns tensor of same type and shape with elements set to 0. |
+| tf.ones(shape) | returns tensor of given shape with elements 1. |
+| tf.ones_like(tensor) | returns a tensor of the same type and shape as `tensor` with all elements 1 |
+| tf.random_normal(shape, mean, stddev) | outputs random values from a normal distribution |
+| tf.truncated_normal(shape, mean, stddev) | outputs random values from a truncated normal distribution ( values whose magnitude is more than two standard devications from the mean are dropped and re-picked) |
+| tf.random_uniform(shape, minval, maxval) | generates values rom a unifrom distribution in the range [minval, maxval) |
+| tf.random_shuffle(tensor) | randomly shuffles a tensor along its first dimension |
+| tf.random_crop(value, size, seed=None, name=None) | crop out a contiguous block of shape from the tensor. |
 
-36
+Matrix multiplication is performed via the `tf.matmul(A,B)` for two Tensor objects A and B.
+
+```python
+A = tf.constant([1,2,3],
+                [4,5,6])
+print(a.get_shape()) # (2,3)
+
+x = tf.constant([1,0,1])
+print(x.get_shape()) # (3,)
+```
+
+We can add another dimension by passing `tf.expand_dims()` with the position of the added dimension as the second argument.
+
+```python
+x = tf.expand_dims(x,1)
+print(x.get_shape()) # (3,1)
+b = tf.matmul(A,x)
+
+sess = tf.InteractiveSession()
+print('matmul result:\n{}'.format(b.eval()))
+sess.close()
+```
+
+If we want to flip an array, we can use `tf.transpose()` function. We can use `.name` attribute to see the name of the object. Objects within the same graph cannot have the same name. It will automatically add underscore and number to distinguish the two.
+
+```python
+with tf.Graph().as_default():
+  c1 = tf.constant(4, dtype=tf.float64, name='c')
+  c2 = tf.constant(4, dtype=tf.int32, name='c')
+print(c1.name) # c
+print(c2.name) # c_1
+```
+
+If we want to create node grouping to make it easier for complicated graph, we can group nodes together by name using `tf.name_scope("prefix")`. Prefixes are useful when we would like to divide a graph into subgraphs with some meaning.
+
+```python
+with tf.Graph().as_default():
+  c1 = tf.constant(4, dtype=tf.float64, name='c')
+  with tf.name_scope("prefix_name"):
+    c2 = tf.constant(4, dtype=tf.int32, name='c')
+    c3 = tf.constant(4, dtype=tf.float64, name='c')
+print(c1.name) # c
+print(c2.name) # prefix_name/c
+print(c3.name) # prefix_name/c_1
+```
+
+Tensorflow uses variables to optimize the process (tune the parameters). We can create variable using `tf.Variable()` function and then have to explicitly initialize using `tf.global_variables_initializer()` method which allocates memory for the variable and sets its initial values. Variables are computed only when the model runs.
+
+```python
+init_val = tf.random_normal((1,5), 0, 1)
+var = tf.Variable(init_val, name='var')
+print("pre run: \n{}".format(var))  # Tensor("var/read:0", shape(1,5), dtype=float32)
+init = tf.global_variables_initializer()
+with tf.Session() as sess:
+  sess.run(init)
+  post_var = sess.run(var)
+print("\npost run: \n{}".format(post_var)) 
+```
+
+If we want to reuse the same variable, we can use the `tf.get_variables()` function. TF has built-in structures for feeding input values called **placeholders**. Placeholders are empty Variables that will be filled with data later on. If `shape` argument is not specified, placeholder can be fed with data of any size. Whenever we define a placeholder, we must feed it with some input values or else an exception will be thrown. The input data is passed to the `session.run()` method as a dictionary.
+
+```python
+ph = tf.placeholder(tf.float32, shape=(None, 10))
+sess.run(s, feed_dict={x: X_data, w: w_data})
+```
+
+```python
+x_data = np.random.randn(5, 10)
+w_data = np.random.randn(10, 1)
+with tf.Graph().as_default():
+  x = tf.placeholder(tf.float32, shape(5,10))
+  w = tf.palceholder(tf.float32, shape(10,1))
+  b = tf.fill((5,1), -1.)
+  xw = tf.matmul(x,w)
+  xwb = xw + b
+  # s gets the maximum value of that vector by using reduce_max operation.
+  s = tf.reduce_max(xwb)
+  with tf.Session() as sess:
+    outs = sess.run(s, feed_fact={x: x_data, w: w_data})
+print("outs = {}".format(outs))
+```
+
+Let's say we have target variable y and we want to explain using feature vector x. We will need to create placeholders for our input and output data and variables for our weights and intercept.
+
+```python
+x = tf.placeholder(tf.float32, shape=[None, 3])
+y_true = tf.placeholder(tf.float32, shape=None)
+w = tf.Variable([[0,0,0]], dtype=tf.float32, name='weights')
+b = tf.Variable(0, dtype=tf.float32, name='bias')
+y_pred = tf.matmul(w, tf.transpose(x)) + b # matrix multiplications of input container x and weights w plus a bias b
+```
+
+To measure the discrepancy between our model's predictions and the observed targets, we need to measure distance referred to as **loss function** and need to optimize the parameters (weights and  bias) that minimize it. The loss is measured as MSE (mean square error) which is found by taking difference of *y_true* and *y_pred* and squaring the value.
+
+```python
+loss = tf.reduce_mean(tf.square(y_true - y_pred))
+```
+
+Another common loss functions is *cross entropy* which is a measures of similarity between two distributions and used mostly in classification. We can compare the true class with the probabilities of each class given by the model. The more similar the two distributions, the smaller our cross entropy will be.
+
+Next, we need to figure out how to minimize the loss function. Mostly, we need to use optimizers to update the set of weights iteratively in a way that decreases the loss over time. The most common is **gradient descent**. The steepest direction of decrease of gradient is obtained by moving from a point in the direction of the negative gradient. It is suitable for a wide variety of problems. Convergence to global minimum is guaranteed for convex functions, for nonconvex problems they can get stuck in local minima.
+
+Commonly, the stochastic graident descent (SGD) is used where instead of feeding entire dataset to the algorithm for the computation, a subset of the data is sample sequentially at each step. The number of samples range from one sample at a time to a few hundred. Using smaller batches usually works faster. Using a relatively smaller batch size is effectively the preferred approach. Tensorflow makes it easy to use gradient descent. Tensorflow automatically computes the gradients on its own, deriving them from the operations and structure of the graph. An important parameter is *learning rate*, determining how aggressive each update iteration will be. If this is large, we will overshoot the target and never reach minima.
+
+```python
+# We create optimizer by using GradientDescentOptimizer() function with learning rate
+optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+# create train operation that updates our variables by calling optimizer.minimize() passing loss as argument.
+train = optimizer.minimize(loss)
+# train operation is executed when it is fed to `sess.run()` method.
+```
+
+```python
+# Linear Regression example
+import numpy as np
+# create data for simulation
+x_data = np.random.randn(2000, 3)
+w_real = =[0.3, 0.5, 0.1]
+b_real = -0.2
+noise = np.random.randn(1,2000) * 0.1
+y_data = np.matmul(w_real, x_data.T) + b_real + noise
+# Estimate the bias b and weights w by optimizing the model.
+NUM_STEPS = 10
+g = tf.Graph()
+wb_ = []
+with g.as_default():
+  x = tf.placeholder(tf.float32, shape=[None, 3])
+  y_true = tf.placeholder(tf.float32, shape=None)
+
+  with tf.name_scope('inference') as scope:
+    # Initialize both variables with zero values.
+    w = tf.Variable([[0, 0, 0]], dtype=tf.float32, name='weights')
+    b = tf.Variable(0, dtype=tf.float32, name='bias')
+    y_pred = tf.matmul(w, tf.transpose(x)) + b
+  
+  with tf.name_scope('loss') as scope:
+    loss = tf.reduce_mean(tf.square(y_true - y_pred))
+
+  with tf.name_scope('train') as scope:
+    learning_rate = 0.5
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+    train = optimizer.minimize(loss)
+  
+  # Before starting, initialize variables.
+  init = tf.global_variables_initializer()
+  with tf.Session() as sess:
+    sess.run(init)
+    for step in range(NUM_STEPS):
+      sess.run(train, {x: x_data, y_true: y_data})
+      if(step % 5 == 0):
+        print(step, sess.run([w, b]))
+        wb_.append(sess.run([w,b]))
+    print(10, sess.run([w,b]))
+```
+
+```python
+# Logistic Regression example
+N = 20000
+
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
+# create data to simulate results
+x_data = np.random.randn(N, 3)
+w_real = [0.3, 0.5, 0.1]
+b_real = -0.2
+wxb = np.matmul(w_real, x_data.T) + b_real
+y_data_pre_noise = sigmoid(wxb)
+y_data = np.random.binomial(1, y_data_pre_noise)
+y_pred = tf.sigmoid(y_pred)
+loss = y_true * tf.log(y_pred) - (1 - y_true) * tf.log(1 - y_pred)
+loss = tf.reduce_mean(loss)
+
+NUM_STEPS = 50
+with tf.name_scope('loss') as scope:
+  loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+  loss = tf.reduce_mean(loss)
+init = tf.global_variables_initializer()
+with tf.Session() as sess:
+  sess.run(init)
+  for step in range(NUM_STEPS):
+    sess.run(train, {x: x_data, y_true: y_data})
+    if(step % 5 == 0):
+      print(step, sess.run([w,b]))
+      wb_.append(sess.run([w,b]))
+  print(50, sess.run([w,b]))
