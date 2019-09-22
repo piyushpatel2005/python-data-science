@@ -359,3 +359,34 @@ with tf.Session() as sess:
       print(step, sess.run([w,b]))
       wb_.append(sess.run([w,b]))
   print(50, sess.run([w,b]))
+```
+
+## Convolutional Neural Networks
+
+The difference between fully connected and convolutional neural networks is the pattern of connections between consecutive layers. In fully connected case, each unit is connected to all of the units in the previous layer. In a convolutional layer, each unit is connected to a number of nearby units in the previous layer. All units aer connected to the previous layer in the same way, with exact same weights and structure. This leads to an operation known as convolution. In convolutional neural networks, each layer looks at an increasingly larger part of the image as we go deeper into the network. Convolutional structure can be seen as a regularization mechanism. **Regularization** is used to refer to the restriction of an optimization problem by imposing a penalty on the complexity of solution, in the attempt to prevent overfitting to the given examples.
+
+Convolution is the fundamental means by which layers are connected in convolutional neural networks. We build it using `conv2d()` method.
+
+```python
+tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME') # x is data
+```
+
+We stack convolutional layers hierarchically, and *feature map* is a common term referring to the output of each such layer. Suppose we have unknown number of images, each 28x28 pixels with one color channel (grayscale images). In images that have multiple color channels (RGB), we regard each images as a three dimensional tensor of RGB values, but in one channel data, they are just two dimensional and convolutional filters are applied to two-dimensinoal regions. Setting padding to `SAME` means that the borders of x are padded such that the size of the result of the operation is the same as the size of x. The strides value here means that the filter is applied to the input in one-pixel intervals in each dimension, corresponding to full convolution.
+
+Following linear layers, whether convolutional or fully connected, it is common to apply nonlinear activation functions. One aspect of activation functions is thata consecutive linear operations can be replaced by a single one and thus depth doesn't contribute to the expressiveness of the model unless we use nonlinear activations between the linear layers.
+
+### Pooling
+
+Pooling means reducing the size of the data with some local aggregation function, typically written within each feature map. Pooling reduces the size of the data to be processed downstream and can reduce the number of parameters in the model, especially if we use fully connected layers after convolutional ones. Also, we would like our computed features not to care about small changes in position in an image. For instance, feature looking for eyes in the top-right part should not change too much if we move the camera a bit to the right when taking picture. Aggregating eye-detector feature spatially allows the model to overcome such spatial variability between images.
+
+`tf.nn.max_pool(x, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')`
+
+Max pooling outputs the maximum of the input in each region of a predeined size. *ksize* controls the size of pooling and the *strides* controls by how much we slide the pooling grids across x.
+
+### Dropout
+
+Drop is a regularization trick used to force the network to distribute the learned representation across all neurons. It "turns off" a random preset fraction of the units in a layer by setting their values to zero during training. These dropped-out neurons are random, forcing the network to learn a representation that will work even after the dropout. This process is often thought of as training an "ensemble" of multiple networks, thereby increasing generalization. During using network as a classifier at test time (inference), there is no dropout and full network is used as is.
+
+`tf.nn.dropout(layer, keep_prob=keep_prob)` where *keep_prob* is fraction of the neurons to keep working at each step.
+
+57

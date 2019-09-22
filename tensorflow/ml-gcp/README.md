@@ -16,19 +16,19 @@ datalab connect mydatalabvm
 # Enable Cloud Source API
 ```
 
-[Reading CSV files](earthquakes.ipynb)
+[Reading CSV files](notebooks/earthquakes.ipynb)
 
-Check [flights notebook](flights.ipynb) to see invocation of BigQuery and getting results in Pandas dataframes.
+Check [flights notebook](notebooks/flights.ipynb) to see invocation of BigQuery and getting results in Pandas dataframes.
 
-[Invoking already trained machine learning API](mlapis.ipynb) on GCP is easy.
+[Invoking already trained machine learning API](notebooks/mlapis.ipynb) on GCP is easy.
 
 Creating repeatable dataset is an important skill for ML engineers. You should divide the dataset into three parts, development and training, validation and test dataset. This datasets should be independent of bias and if we split the dataset based on one of the features, that feature will have lose its predictability. Before dividing the data into such training and testing datasets, it is important that the data is cleaned.
 
-Check [Datasets creation](repeatable_splitting.ipynb)
+Check [Datasets creation](notebooks/repeatable_splitting.ipynb)
 
 Also, benchmarking is an important consideration to stop overfitting of the model. Overfitted model may not generalize beyond training datasets.
 
-[Benchmarking](create_datasets.ipynb)
+[Benchmarking](notebooks/create_datasets.ipynb)
 
 Tensorflow works in lazy evaluation mode. Tensorflow is an open-source, high performance library for numerical computation that uses directed graphs. We create DAG to represent computation. The nodes represent mathematical opeartion. The edges between the nodes represent arrays of data. 3-D array is called 3-D tensor and 4D tensor, etc.
 
@@ -179,7 +179,7 @@ with tf.Session() as session:
   print (session.run(b, feed_dic={a:[1,2,3]}))
 ```
 
-[Tensorflow lazy and eager evaluation](a_tfstart.ipynb)
+[Tensorflow lazy and eager evaluation](notebooks/a_tfstart.ipynb)
 
 The shapes of various tensors can be changed using some of the methods. `squeeze` squeezes one dimension, `expand_dims` expands the dimension, `reshape` reshapes. We can use `tf.cast(t, tf.float32)` to convert the datatype of a tensor.
 `tf.print()` is a function to print the value of a tensor when some condition is met. `tfdbg` is used to debug a tensorflow session. TensorBoard can also be used for various tensorflow debugging. We can change the logging level from WARN to INFO using `tf.logging.set_verbosity(tf.logging.INFO)`. Tensorflow also comes with dynamic debugger that can be used from command line `tf_debug`.
@@ -203,7 +203,7 @@ with tf.Session() a sess:
 
 This can be run using `python xyz.py --debug`.
 
-Check [debugger notebook](debug_demo.ipynb)
+Check [debugger notebook](notebooks/debug_demo.ipynb)
 
 ## Estimator API
 
@@ -278,7 +278,7 @@ model.train(pandas_train_input_fn(df), steps=1000) # override the steps in the d
 model.train(pandas_train_input_fn(df), max_steps=1000) # might be nothing if checkpoint already there
 ```
 
-[Example of running training using estimator API](b_estimator.ipynb)
+[Example of running training using estimator API](notebooks/b_estimator.ipynb)
 
 For real world model, we can supply data using datasets. Large datasets might be sharded into different files.
 
@@ -310,7 +310,7 @@ dataset = tf.data.Dataset.list_files("train.csv")
             .map(decode_line)
 ```
 
-[Handling large data](c_dataset.ipynb)
+[Handling large data](notebooks/c_dataset.ipynb)
 
 The function `tf.estimator.train_and_evaluate()` implements distributed training. For using this api, we choose estimator, provide run config and provide train and evaluation specs. EvalSpec is where we provide our test dataset.
 
@@ -330,7 +330,7 @@ def serving_input_fn():
   return tf.estimator.export.ServingInputReceiver(features, json)
 ```
 
-[Distributed training and using Tensorboard](d_traineval.ipynb)
+[Distributed training and using Tensorboard](notebooks/d_traineval.ipynb)
 
 Google cloud AI platform allows to scale machine learning beyond single machine's capabilities. Large datasets can be handled on cloud. We can have micro service to serve our model with scalable cloud platform.
 
@@ -345,13 +345,13 @@ gcloud ml-engine jobs list --filter='createTime>2017-01-15T19:00'
 gcloud ml-engine jobs list --filter='jobId:census*' --limit=3
 ```
 
-[Running Tensorflow on cloud](e_ai_platform.ipynb)
+[Running Tensorflow on cloud](notebooks/e_ai_platform.ipynb)
 
 ## Feature Engineering
 
 Feature engineering takes about 50-70% of the time. Good features have to be related to the objective. It should be known at prediction time, should be numeric and have enough examples. If we have too many features, it will result in data-draggery. Different problems in the same domain may require different features. We should at least have 5 examples of each data (categorical data) in order to consider it as good feature.
 
-[First notebook feature engineering](a_features.ipynb)
+[First notebook feature engineering](notebooks/a_features.ipynb)
 
 Sometimes, during preprocessing, we may need to re-scale values. To re-scale, we need minimum and maximum values of dataset.
 
@@ -597,7 +597,7 @@ def serving_input_fn():
 
 The other option is to create feature engineering in Cloud Dataflow. The third option is to use `tf.transform`.
 
-[Feature Engineering on Dataflow](feateng.ipynb)
+[Feature Engineering on Dataflow](notebooks/feateng.ipynb)
 
 With **Tensorflow transform**, we are limited to tensorflow transform but also get efficiency of Tensorflow. It is hybrid of Apache Beam and Tensorflow. For on the fly preprocessing, use Tensorflow. In this case, analysis is carried out in Apache Beam and transformations are done in Tensorflow. `tf.transform` provides two `PTransform`s. `AnalyzeAndTransformDataset` is executed in Beam to create the training dataset. `TransformDataset` is executed in Beam to create the evaluation dataset. The transformation code is executed in Tensorflow at prediction time. There are two phases: Analysis phase executed in Beam, Transform phase executed in Tensorflow during prediction.
 
@@ -648,8 +648,32 @@ def preprocess(inputs):
 
 While writing out the evaluation dataset, we reuse the transform function computed from the training. The reason `preprocess` needs only Tensorflow methods and not any Python method is because they are part of prediction graph. This way user can give raw data and model can do necessary transformations.
 
-[TF Transform example](tftransform.ipynb)
+[TF Transform example](notebooks/tftransform.ipynb)
 
 ## Regularization
 
 When the loss on test data is increasing compared to training data. That graph is a sign of overfitting with large number of iterations.
+
+Learning rate controls the size of the step in weight space. If too small, training will take a long time. If too large, training will bounce around. Default learning rate in Estimator's LinearRegressor is smaller of 0.2 or 1/sqrt(num_features). Similarly, batch size controls the number of samples that gradient is calculated on. If too small, training will bounce around. If too large, training will take a long time. Usually batch size of 40-100 is a good number.
+Regularization provides a way to define model complexity based on the values of the weights.
+
+Optimizing is a technique of minimizing or maximizing function. There are many functions for optimization.
+- Gradient Descent --> Traditional approach, typically implemented.
+- Momentum --> Reduces learning rate when gradient values are small
+- AdaGrad --> Gives frequently occurring features low learning rates.
+- AdaDelta --> Improves AdaGrad by avoiding reducing LR (learning rate) to zero.
+- Adam --> AdaGrad with a bunch of fixes
+- Ftrl --> "Follow the regularized leader" works well on wide models
+
+The last two are good defaults for DNN and Linear models.
+
+[Hand Tuning of Hyperparameters](notebooks/a_handtuning.ipynb)
+
+### Hyperparameter Tuning
+
+Hyperparameter is a parameter set before training which doesn't change during training. Google Vizier allows us to automatically tune hyperparameters. Cloud ML takes this burden of hyperparameter tuning away. For such auto tuning, we need to do following three things.
+1. Make hyperparameters as command line arguments
+2. Make sure that outputs of different steps don't clobber each other by probably adding suffix.
+3. Supply hyperparameters to training job.
+
+[Hyperparameter tuning automatic](notebooks/b_hyperparam.ipynb)
