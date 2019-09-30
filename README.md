@@ -37,6 +37,21 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 ![Python for Data science](images/data-science.png)
 
+### List of Anaconda commands
+
+```shell
+conda install <package_name> # install a package
+conda remove <package_name> # remove a package
+conda install <pkg1> <pkg2> # install multiple packages
+conda search "*beautiful*" # search for package using some word
+conda create -n <env_name> [list of packages] # create new virtual environment with list of packages
+conda create -n <env_name> python=2 [list of packages] # create virtual environment with python 2
+conda env export > environment.yaml # create export of the environment like requirements.txt file
+conda env create -f environment.yaml # create virtual environment using environment file
+conda env list # list all virtual environments
+conda env remove -n <env_name> # remove a virtual environment
+```
+
 ### Table of Contents:
 
 **Theory**
@@ -133,7 +148,6 @@ If you need a Python refresher, check out my other [Python repository](https://g
 
 3. [Splunk](lessons/splunk.md)
 
-
 ## Harvard Data Science Notebooks
 
 [Basics of Python](harvard-data-science/Lab1-babypython.ipynb)
@@ -152,3 +166,4 @@ If you need a Python refresher, check out my other [Python repository](https://g
 [Statistics](Lab3-Stats.ipynb)
 
 [Frequency distributions](Lab3-Freq.ipynb)
+

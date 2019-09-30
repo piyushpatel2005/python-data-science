@@ -677,3 +677,25 @@ Hyperparameter is a parameter set before training which doesn't change during tr
 3. Supply hyperparameters to training job.
 
 [Hyperparameter tuning automatic](notebooks/b_hyperparam.ipynb)
+
+Zeroing out coefficients can help with performance, especially with large models and sparse inputs. With L1 regularization, fewer coefficients to store/load which reduces memory and model size and fewer multiplications needed which increases predictino speed. L2 regularization only makes weights small, not zero. Feature crosses lead to lots of input nodes, so having zero weights is important. L0-norm is the count of non-zero weights is NP-hard, non-convex optimization problem. L1 norm (sum of absolute values of weights) is convex and efficient. It tends to encourage sparsity in the model. With L1, we can end up with smaller model but could be less effective compared to L2. Elastic nets combine the feature selection of L1 regularization with the generalizability of L2 regularization.
+
+The output of Logistic Regression is a calibrated probability estimate. This is useful because we can cast binary classification problems into probabilistic problems. "Will customer buy them?" becomes "Predict the probability that customer buys item". Typically, cross-entropy is used as the error metric. Regularization is important in logistic regression because driving the loss to zero is difficult and dangerous. 
+
+### Neural Network
+
+Manual feature engineering is difficult. In such situations, neural networks can be useful. They combine features and next layer combines combination of earlier layer. We can have different layers of hidden layers. Different kinds of activation functions provide non-linear regression model. In Tensorflow estimator API, using DNNRegressor is similar to using LinearRegressor. We add `hidden_units`, a new parameter to denote hidden layers. During training process, gradients can vanish. Each additional layer can successively reduce signal vs noise. When it becomes very small, weights no longer update and learning halts. The solution is to use non-saturating activation functions such as ReLu instead of sigmoid/tanh. Sometimes gradients can explode. Learning rates can be important. For this, batch normalization (smaller batch sizes) or gradient clipping (If gradient exceeds some threshold, rescale the gradient component) can help. Another common failure scenario occurs when ReLu layers can die. We can monitor fraction of zero weights in TensorBoard. In this case learning halts. To solve, lower the learning rates.
+
+Smalller magnitude of feature values help gradient descent converge and avoid NaN trap. It also avoids outlier values and helping generalization. There are many methods to make feature values scale to smaller numbers. Linear scaling by finding min and max of data and use them to normalize each value. There is hard capping which sets the minimum and maximum values and avoid all values beyond those min and max. Log scaling finds logarithmic value of input data. This is useful when data has huge range.
+Dropout layers are a form of regularization. Dropout worksd by randomly "dropping out" unit activations in a network for a single gradient step.
+
+**Multi-class neural nets**: Sigmoid function is useful for logistic regression when we have binary classification problem. If we have multi-class problems, one idea is to have one vs all approach. The problems could be that scale of each classification could be different. Each classification subtasks see unbalanced data distribution for positive and negative results. The possible fix could be 1 vs 1 classification.
+If we add sum of outputs to be 1.0. Then output could be interpreted as probability. Approximate versions of softmax like candidate sampling calculates for all the positive labels, but only for a random sample of negatives using `tf.nn.sampled_softmax_loss`, noise-contrastive approximates the denominator of softmax by modeling the distribution of outputs using `tf.nn.nce_loss`.
+
+[Neural Network training model](notebooks/c_neuralnetwork.ipynb)
+
+**Embeddings** is a way to do dimensionality reduction. We can write our own custom estimators. 
+
+[Custom estimator for Linear Regression](notebooks/d_customestimator_linear.ipynb)
+
+[Custom Estimator](notebooks/d_customestimator.ipynb)
